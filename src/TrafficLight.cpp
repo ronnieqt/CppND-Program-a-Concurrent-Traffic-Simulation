@@ -14,9 +14,9 @@ T MessageQueue<T>::receive()
     // to wait for and receive new messages and pull them from the queue using move semantics.
     // The received object should then be returned by the receive function.
     std::unique_lock<std::mutex> ulck(_mutex);
-    _cond.wait(ulck, [this](){return !_queue.empty();});
-    T msg = std::move(_queue.front());
-    _queue.pop_front();
+    _cond.wait(ulck, [this](){ return !_queue.empty(); });
+    T msg = std::move(_queue.back());
+    _queue.clear();  // reference: https://knowledge.udacity.com/questions/98313
     return msg;
 }
 
@@ -96,9 +96,6 @@ void TrafficLight::cycleThroughPhases()
             // toggle the current phase of traffice light
             TrafficLightPhase nextPhase = (_currentPhase == TrafficLightPhase::green)
                                         ? TrafficLightPhase::red : TrafficLightPhase::green;
-            std::cout << "xxx TrafficLight "
-                      << (_currentPhase == TrafficLightPhase::green ? "Green" : "Red") << " -> "
-                      << (nextPhase     == TrafficLightPhase::green ? "Green" : "Red") << std::endl;
             _currentPhase = nextPhase;
             lastUpdate = std::chrono::system_clock::now();
             // send an update to the message queue
